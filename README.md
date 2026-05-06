@@ -1,6 +1,6 @@
 # Project Title
 
-Write a 1-2 sentences that quickly and clearly convey what your repo is for.
+This repository contains a Quarto-based statistical analysis project using General Social Survey (GSS) data to explore social trends across multiple variables from 2018–2024. The project focuses on data cleaning, exploratory data analysis, and the creation of professional tables and visualizations in R to communicate insights from the dataset.
 
 ## Overview
 
