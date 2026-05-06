@@ -12,7 +12,7 @@ This is optional but highly recommended. You'll include one interesting insight 
 
 ## Data Sources and Acknowledgements
 
-Be sure to list where you got any data used within the project. Be sure to acknowledge any one whose work or elements you're drawing upon.
+The dataset used in this project comes from the General Social Survey (GSS), a nationally representative survey conducted in the United States. The GSS collects demographic, behavioral, and attitudinal data from respondents across the country.
 
 ## Current Plan
 
