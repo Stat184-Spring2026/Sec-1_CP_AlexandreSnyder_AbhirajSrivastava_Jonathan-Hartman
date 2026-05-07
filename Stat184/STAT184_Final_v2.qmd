@@ -356,7 +356,7 @@ This analysis used General Social Survey data to examine public confidence in me
 
 Abhiraj Srivastava was responsible for data cleaning, exploratory analysis, Quarto document organization, table creation, and visualization development.
 
-Jonathan Hartman was responsible for the README.md, the GSSRepoPlan.docx, reviewing mutliple code chunks, and creation of the happiness table and visualization.
+Jonathan Hartman was responsible for the README.md, the GSSRepoPlan.docx, reviewing multiple code chunks, and creation of the happiness table and visualization.
 
 Alexandre Snyder was responsible for the creation of the mean responses scatterplot, the happiness scatterplot, and reviewing all aforementioned work.
 
