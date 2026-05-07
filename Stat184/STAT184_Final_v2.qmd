@@ -1,6 +1,9 @@
 ---
 title: "STAT184 Final Project"
-authors: "Abhiraj Srivastava", "Jonathan Hartman", "Alexandre Snyder"
+author: 
+- "Abhiraj Srivastava" 
+- "Jonathan Hartman" 
+- "Alexandre Snyder"
 format: pdf
 editor: visual
 number-sections: true
@@ -16,11 +19,11 @@ The dataset used in this project comes from the General Social Survey (GSS), a n
 
 The main variables used in this analysis include:
 
--   `CONMEDIC` — confidence in medicine
--   `HAPPY` — self-reported happiness
--   `PRAY` — frequency of prayer
--   `CONCLERG` — confidence in clergy
--   `CONFED` — confidence in the federal government
+- `CONMEDIC` — confidence in medicine
+- `HAPPY` — self-reported happiness
+- `PRAY` — frequency of prayer
+- `CONCLERG` — confidence in clergy
+- `CONFED` — confidence in the federal government
 
 These variables allow the project to compare public confidence in medicine with other social attitudes and personal well-being measures.
 
