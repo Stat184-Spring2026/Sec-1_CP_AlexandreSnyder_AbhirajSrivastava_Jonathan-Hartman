@@ -1,6 +1,6 @@
 ---
 title: "STAT184 Final Project"
-author: "Abhiraj Srivastava"
+authors: "Abhiraj Srivastava", "Jonathan Hartman", "Alexandre Snyder"
 format: pdf
 editor: visual
 number-sections: true
@@ -41,7 +41,7 @@ The dataset only partially satisfies the CARE principles. The GSS provides broad
 #| warning: false
 
 # Primary Author: Abhiraj Srivastava
-# Reviewer: _______
+# Reviewer: Jonathan Hartman
 # Style Guide: Tidyverse Style Guide
 
 library(tidyverse)
@@ -188,6 +188,9 @@ The stacked bar chart shows the percentage distribution of trust levels in medic
 ## Figure 2: Mean Responses Table
 
 ```{r}
+# Primary Author: Alexandre Snyder
+# Reviewer: Jonathan Hartman
+# Style Guide: Tidyverse Style Guide
 #| tbl-cap: "Mean responses by variable and year from the General Social Survey."
 
 summary_table <- clean_data |>
@@ -222,6 +225,9 @@ This table compares average responses across prayer frequency, happiness, confid
 ## Figure 3: Happiness Scatterplot
 
 ```{r}
+# Primary Author: Alexandre Snyder
+# Reviewer: Jonathan Hartman
+# Style Guide: Tidyverse Style Guide
 #| fig-cap: "Scatterplot showing happiness responses across survey years."
 #| fig-alt: "Scatterplot showing happiness response levels for General Social Survey respondents across 2018, 2021, 2022, and 2024. Jittered points show respondents categorized as very happy, pretty happy, or not too happy over time."
 #| fig-width: 8
@@ -275,6 +281,10 @@ The happiness scatterplot shows the spread of respondent happiness levels across
 ## Figure 4: Average Confidence and Happiness Trends
 
 ```{r}
+# Primary Author: Jonathan Hartman
+# Reviewer: Abhiraj Srivastava
+# Style Guide: Tidyverse Style Guide
+
 #| fig-cap: "Line chart showing average responses for selected GSS variables from 2018 to 2024."
 #| fig-alt: "Line chart comparing average response scores for happiness, prayer, confidence in clergy, confidence in the federal government, and confidence in medicine across 2018, 2021, 2022, and 2024."
 #| fig-width: 8
@@ -342,6 +352,10 @@ This analysis used General Social Survey data to examine public confidence in me
 # Author Contributions
 
 Abhiraj Srivastava was responsible for data cleaning, exploratory analysis, Quarto document organization, table creation, and visualization development.
+
+Jonathan Hartman was responsible for the README.md, the GSSRepoPlan.docx, reviewing mutliple code chunks, and creation of the happiness table and visualization.
+
+Alexandre Snyder was responsible for the creation of the mean responses scatterplot, the happiness scatterplot, and reviewing all aforementioned work.
 
 # Code Appendix
 
