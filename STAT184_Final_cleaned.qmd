@@ -1,6 +1,6 @@
 ---
 title: "STAT184 Final Project"
-author: "Abhiraj Srivastava"
+authors: "Abhiraj Srivastava", "Jonathan Hartman", "Alexandre Snyder"
 format: pdf
 editor: visual
 number-sections: true
@@ -52,7 +52,7 @@ The original GSS data use negative values to represent missing, skipped, or inva
 
 ```{r setup}
 # Primary Author: Abhiraj Srivastava
-# Reviewer: _______
+# Reviewer: Jonathan Hartman
 # Style Guide: Tidyverse Style Guide
 
 library(tidyverse)
@@ -180,6 +180,8 @@ This report used General Social Survey data to examine public confidence in medi
 # Author Contributions
 
 Abhiraj Srivastava was responsible for cleaning the data, organizing the Quarto report, creating the medical confidence table, creating the stacked bar chart, and writing the interpretation.
+
+Jonathan Hartman was respobsible for creating and filling out the README.md, the Plan.docx, creating exectutive confidence table, creating the 
 
 # Code Appendix
 
