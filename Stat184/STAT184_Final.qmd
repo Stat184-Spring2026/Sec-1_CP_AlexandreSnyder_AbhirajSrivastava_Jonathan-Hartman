@@ -1,0 +1,184 @@
+---
+title: "STAT184 Final Project"
+author: "Abhiraj Srivastava"
+format: pdf
+editor: visual
+toc: true
+number-sections: true
+---
+
+# Introduction
+
+This project explores trends in public confidence toward medicine using data from the General Social Survey (GSS). The analysis focuses on how trust in medical institutions changed between 2018 and 2024, particularly before and after the COVID-19 pandemic. Public trust in medicine is an important social indicator because it affects healthcare behavior, vaccine uptake, and confidence in scientific institutions.
+
+# Data Provenance
+
+The dataset used in this project comes from the General Social Survey (GSS), a nationally representative survey conducted in the United States. The GSS collects demographic, behavioral, and attitudinal data from respondents across the country.
+
+The specific variable used in this analysis is:
+
+-   `CONMEDIC` — confidence in medicine
+
+Additional variables from the GSS may also be used for exploratory analysis and comparison.
+
+# FAIR and CARE Principles
+
+## FAIR Principles
+
+The dataset partially satisfies the FAIR principles:
+
+-   **Findable:** The GSS dataset is publicly available and well documented.
+-   **Accessible:** Researchers and students can access the data online.
+-   **Interoperable:** The dataset works with statistical software such as R.
+-   **Reusable:** Documentation and variable descriptions allow future reuse.
+
+## CARE Principles
+
+The CARE principles are only partially satisfied:
+
+-   The GSS provides broad demographic representation.
+-   However, the data are not specifically designed around Indigenous data governance or community ownership principles.
+
+# Data Cleaning and Wrangling
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+
+GSS_clean <- readRDS("GSS_clean.rds")
+```
+
+The data required cleaning because missing values in the GSS are often represented with negative numbers such as `-100`. These values were converted into `NA` values before analysis.
+
+```{r}
+medical_data <- GSS_clean |>
+  filter(YEAR %in% c(2018, 2021, 2022, 2024)) |>
+  mutate(
+    CONMEDIC = if_else(CONMEDIC < 0, NA_integer_, CONMEDIC)
+  )
+```
+
+# Exploratory Data Analysis
+
+The exploratory analysis focuses on trends in medical confidence across multiple years.
+
+## Medical Confidence Table
+
+```{r}
+medical_table <- medical_data |>
+  mutate(
+    Medical_Confidence = case_when(
+      CONMEDIC == 1 ~ "High Trust / Full Confidence",
+      CONMEDIC == 2 ~ "Moderate / Skeptical",
+      CONMEDIC == 3 ~ "Low / No Confidence",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  drop_na(Medical_Confidence) |>
+  count(YEAR, Medical_Confidence) |>
+  group_by(YEAR) |>
+  mutate(
+    Percent = round(n / sum(n) * 100, 1)
+  ) |>
+  ungroup()
+
+knitr::kable(
+  medical_table,
+  caption = "Medical Confidence by Year",
+  align = "c"
+)
+```
+
+# Data Visualization
+
+## Stacked Bar Chart of Medical Confidence
+
+```{r}
+medical_graph_data <- medical_data |>
+  mutate(
+    Sentiment = case_when(
+      CONMEDIC == 1 ~ "High Trust / Full Confidence",
+      CONMEDIC == 2 ~ "Moderate / Skeptical",
+      CONMEDIC == 3 ~ "Low / No Confidence",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  drop_na(Sentiment) |>
+  count(YEAR, Sentiment) |>
+  group_by(YEAR) |>
+  mutate(percent = n / sum(n)) |>
+  ungroup() |>
+  mutate(
+    Sentiment = factor(
+      Sentiment,
+      levels = c(
+        "High Trust / Full Confidence",
+        "Moderate / Skeptical",
+        "Low / No Confidence"
+      )
+    )
+  )
+
+ggplot(
+  medical_graph_data,
+  aes(
+    x = factor(YEAR),
+    y = percent,
+    fill = Sentiment
+  )
+) +
+  geom_col(
+    width = 0.9,
+    color = "white"
+  ) +
+  scale_y_continuous(
+    labels = function(x) paste0(x * 100, "%"),
+    limits = c(0, 1)
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Low / No Confidence" = "#e45756",
+      "Moderate / Skeptical" = "#f2f2f2",
+      "High Trust / Full Confidence" = "#1f77b4"
+    )
+  ) +
+  labs(
+    title = "The Shift in Public Sentiment Toward Medicine",
+    subtitle = "Percentage of population by trust level (2018–2024)",
+    x = NULL,
+    y = "Percentage of Respondents",
+    fill = "Sentiment"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      size = 20
+    ),
+    plot.subtitle = element_text(size = 14),
+    legend.position = "top",
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+```
+
+\`\`\`{r}\
+\# R code goes here\
+summary(cars)\
+\`\`\`
+
+# Interpretation of Results
+
+The visualization suggests that public confidence in medicine shifted noticeably after 2020. The percentage of respondents expressing low confidence increased over time, while high trust gradually declined. This trend may reflect the political and social polarization surrounding public health during and after the COVID-19 pandemic.
+
+# Conclusion
+
+This analysis demonstrated how confidence in medicine changed between 2018 and 2024 using data from the General Social Survey. Through data cleaning, exploratory analysis, tables, and visualizations, the report highlighted changing public sentiment toward medical institutions in the United States.
+
+# Code Appendix
+
+```{r}
+sessionInfo()
+```
+
+{r}
