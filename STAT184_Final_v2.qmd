@@ -7,6 +7,9 @@ author:
 format: pdf
 editor: visual
 number-sections: true
+
+execute:
+  echo: false
 ---
 
 # Introduction
@@ -50,8 +53,9 @@ The dataset only partially satisfies the CARE principles. The GSS provides broad
 library(tidyverse)
 library(ggplot2)
 library(knitr)
+library(here)
 
-GSS_clean <- readRDS("GSS_clean.rds")
+GSS_clean <- readRDS(here("GSS_clean.rds"))
 ```
 
 The data required cleaning because missing or invalid values in the GSS are often represented with negative numbers. These values were converted into `NA` values before analysis. The analysis focuses on the years 2018, 2021, 2022, and 2024.
@@ -356,12 +360,106 @@ This analysis used General Social Survey data to examine public confidence in me
 
 Abhiraj Srivastava was responsible for data cleaning, exploratory analysis, Quarto document organization, table creation, and visualization development.
 
-Jonathan Hartman was responsible for the README.md, the GSSRepoPlan.docx, reviewing mutliple code chunks, and creation of the happiness table and visualization.
+Jonathan Hartman was responsible for the README.md, the GSSRepoPlan.docx, reviewing multiple code chunks, and creation of the happiness table and visualization.
 
 Alexandre Snyder was responsible for the creation of the mean responses scatterplot, the happiness scatterplot, and reviewing all aforementioned work.
 
 # Code Appendix
 
+This appendix contains the primary R code used for data cleaning, wrangling, table generation, and visualization throughout the analysis. Code is included to support reproducibility and transparency of the project workflow.
+
+## Package Loading and Data Import
+
 ```{r}
+#| echo: true
+
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(here)
+
+GSS_clean <- readRDS(here("GSS_clean.rds"))
+```
+
+## Data Cleaning and Wrangling
+
+```{r}
+#| echo: true
+
+exclude_vals <- c(
+  -100, -99, -98, -97, -96,
+  -95, -94, -93, -90, -80,
+  -70, -60, -40
+)
+
+clean_data <- GSS_clean |>
+  filter(YEAR %in% c(2018, 2021, 2022, 2024)) |>
+  mutate(
+    across(
+      c(PRAY, HAPPY, CONCLERG, CONFED, CONMEDIC),
+      ~ if_else(.x %in% exclude_vals, NA_real_, as.numeric(.x))
+    )
+  )
+
+medical_data <- clean_data
+```
+
+## Medical Confidence Table Code
+
+```{r}
+#| echo: true
+
+medical_table <- medical_data |>
+  mutate(
+    Medical_Confidence = case_when(
+      CONMEDIC == 1 ~ "High Trust / Full Confidence",
+      CONMEDIC == 2 ~ "Moderate / Skeptical",
+      CONMEDIC == 3 ~ "Low / No Confidence",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  drop_na(Medical_Confidence) |>
+  count(YEAR, Medical_Confidence) |>
+  group_by(YEAR) |>
+  mutate(
+    Percent = round(n / sum(n) * 100, 1)
+  ) |>
+  ungroup()
+```
+
+## Visualization Code Example
+
+```{r}
+#| echo: true
+
+ggplot(
+  trend_data,
+  aes(
+    x = YEAR,
+    y = Mean,
+    group = Variable,
+    color = Variable
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_x_continuous(
+    breaks = c(2018, 2021, 2022, 2024)
+  ) +
+  labs(
+    title = "Average Social Attitude Responses Over Time",
+    subtitle = "Lower values generally represent more positive responses",
+    x = "Survey Year",
+    y = "Mean Response",
+    color = "Variable"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Session Information
+
+```{r}
+#| echo: true
+
 sessionInfo()
 ```
