@@ -1,0 +1,350 @@
+---
+title: "STAT184 Final Project"
+author: "Abhiraj Srivastava"
+format: pdf
+editor: visual
+number-sections: true
+---
+
+# Introduction
+
+This project explores trends in public confidence toward medicine using data from the General Social Survey (GSS). The analysis focuses on how trust in medical institutions changed between 2018 and 2024, particularly before and after the COVID-19 pandemic. Public trust in medicine is an important social indicator because it affects healthcare behavior, vaccine uptake, and confidence in scientific institutions.
+
+# Data Provenance
+
+The dataset used in this project comes from the General Social Survey (GSS), a nationally representative survey conducted in the United States. The GSS collects demographic, behavioral, and attitudinal data from respondents across the country.
+
+The main variables used in this analysis include:
+
+-   `CONMEDIC` — confidence in medicine
+-   `HAPPY` — self-reported happiness
+-   `PRAY` — frequency of prayer
+-   `CONCLERG` — confidence in clergy
+-   `CONFED` — confidence in the federal government
+
+These variables allow the project to compare public confidence in medicine with other social attitudes and personal well-being measures.
+
+# FAIR and CARE Principles
+
+## FAIR Principles
+
+The dataset partially satisfies the FAIR principles. It is **findable** because the GSS is publicly known and documented. It is **accessible** because researchers and students can access the data online. It is **interoperable** because it can be used in statistical software such as R. It is **reusable** because the GSS provides documentation and variable descriptions that support future analysis.
+
+## CARE Principles
+
+The dataset only partially satisfies the CARE principles. The GSS provides broad demographic representation, but it was not specifically designed around Indigenous data governance, community ownership, or collective benefit. Because of this, the CARE principles are useful for thinking critically about the limits of the dataset.
+
+# Data Cleaning and Wrangling
+
+```{r}
+#| message: false
+#| warning: false
+
+# Primary Author: Abhiraj Srivastava
+# Reviewer: _______
+# Style Guide: Tidyverse Style Guide
+
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+
+GSS_clean <- readRDS("GSS_clean.rds")
+```
+
+The data required cleaning because missing or invalid values in the GSS are often represented with negative numbers. These values were converted into `NA` values before analysis. The analysis focuses on the years 2018, 2021, 2022, and 2024.
+
+```{r}
+#| message: false
+#| warning: false
+
+exclude_vals <- c(-100, -99, -98, -97, -96, -95, -94, -93, -90, -80, -70, -60, -40)
+
+clean_data <- GSS_clean |>
+  filter(YEAR %in% c(2018, 2021, 2022, 2024)) |>
+  mutate(
+    across(
+      c(PRAY, HAPPY, CONCLERG, CONFED, CONMEDIC),
+      ~ if_else(.x %in% exclude_vals, NA_real_, as.numeric(.x))
+    )
+  )
+
+medical_data <- clean_data
+```
+
+# Exploratory Data Analysis
+
+The exploratory analysis focuses on trends in medical confidence, happiness, and confidence in social institutions across multiple years.
+
+## Figure 1.1: Medical Confidence Table
+
+```{r}
+#| tbl-cap: "Medical confidence levels by year from the General Social Survey."
+
+medical_table <- medical_data |>
+  mutate(
+    Medical_Confidence = case_when(
+      CONMEDIC == 1 ~ "High Trust / Full Confidence",
+      CONMEDIC == 2 ~ "Moderate / Skeptical",
+      CONMEDIC == 3 ~ "Low / No Confidence",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  drop_na(Medical_Confidence) |>
+  count(YEAR, Medical_Confidence) |>
+  group_by(YEAR) |>
+  mutate(
+    Percent = round(n / sum(n) * 100, 1)
+  ) |>
+  ungroup() |>
+  rename(
+    Year = YEAR,
+    `Medical Confidence` = Medical_Confidence,
+    Count = n
+  )
+
+knitr::kable(
+  medical_table,
+  caption = "Medical Confidence by Year",
+  align = "c"
+)
+```
+
+This table shows medical confidence categories by year from 2018 to 2024, including counts and percentages for high trust, moderate skepticism, and low confidence in medicine.
+
+## Figure 1.2: Stacked Bar Chart of Medical Confidence
+
+```{r}
+#| fig-cap: "Stacked bar chart showing changes in public confidence toward medicine from 2018 to 2024."
+#| fig-alt: "Stacked bar chart showing the percentage distribution of high trust, moderate skepticism, and low confidence in medicine across the years 2018, 2021, 2022, and 2024."
+#| fig-width: 8
+#| fig-height: 5
+#| message: false
+#| warning: false
+
+medical_graph_data <- medical_data |>
+  mutate(
+    Sentiment = case_when(
+      CONMEDIC == 1 ~ "High Trust / Full Confidence",
+      CONMEDIC == 2 ~ "Moderate / Skeptical",
+      CONMEDIC == 3 ~ "Low / No Confidence",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  drop_na(Sentiment) |>
+  count(YEAR, Sentiment) |>
+  group_by(YEAR) |>
+  mutate(percent = n / sum(n)) |>
+  ungroup() |>
+  mutate(
+    Sentiment = factor(
+      Sentiment,
+      levels = c(
+        "High Trust / Full Confidence",
+        "Moderate / Skeptical",
+        "Low / No Confidence"
+      )
+    )
+  )
+
+ggplot(
+  medical_graph_data,
+  aes(
+    x = factor(YEAR),
+    y = percent,
+    fill = Sentiment
+  )
+) +
+  geom_col(width = 0.9, color = "white") +
+  scale_y_continuous(
+    labels = function(x) paste0(x * 100, "%"),
+    limits = c(0, 1)
+  ) +
+  scale_fill_manual(
+    values = c(
+      "High Trust / Full Confidence" = "#1f77b4",
+      "Moderate / Skeptical" = "#f2f2f2",
+      "Low / No Confidence" = "#e45756"
+    )
+  ) +
+  labs(
+    title = "The Shift in Public Sentiment Toward Medicine",
+    subtitle = "Percentage of population by trust level, 2018–2024",
+    x = NULL,
+    y = "Percentage of Respondents",
+    fill = "Sentiment"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 11),
+    legend.position = "top",
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+```
+
+The stacked bar chart shows the percentage distribution of trust levels in medicine for each year. This visualization makes it easier to compare how the balance of high trust, moderate skepticism, and low confidence changed over time.
+
+## Figure 2: Mean Responses Table
+
+```{r}
+#| tbl-cap: "Mean responses by variable and year from the General Social Survey."
+
+summary_table <- clean_data |>
+  group_by(YEAR) |>
+  summarise(
+    Prayer = round(mean(PRAY, na.rm = TRUE) / 2, 2),
+    Happiness = round(mean(HAPPY, na.rm = TRUE), 2),
+    `Clergy Confidence` = round(mean(CONCLERG, na.rm = TRUE), 2),
+    `Govt Confidence` = round(mean(CONFED, na.rm = TRUE), 2),
+    `Health Confidence` = round(mean(CONMEDIC, na.rm = TRUE), 2),
+    .groups = "drop"
+  ) |>
+  pivot_longer(
+    cols = -YEAR,
+    names_to = "Variable",
+    values_to = "Mean"
+  ) |>
+  pivot_wider(
+    names_from = YEAR,
+    values_from = Mean
+  )
+
+knitr::kable(
+  summary_table,
+  caption = "Mean Responses by Variable and Year",
+  align = "c"
+)
+```
+
+This table compares average responses across prayer frequency, happiness, confidence in clergy, confidence in government, and confidence in medicine. Lower values generally represent more positive responses for these variables. Prayer was divided by two so that it better matches the 1–3 scale of the other variables.
+
+## Figure 3: Happiness Scatterplot
+
+```{r}
+#| fig-cap: "Scatterplot showing happiness responses across survey years."
+#| fig-alt: "Scatterplot showing happiness response levels for General Social Survey respondents across 2018, 2021, 2022, and 2024. Jittered points show respondents categorized as very happy, pretty happy, or not too happy over time."
+#| fig-width: 8
+#| fig-height: 5
+#| message: false
+#| warning: false
+
+happiness_plot_data <- clean_data |>
+  mutate(
+    Happiness_Level = case_when(
+      HAPPY == 1 ~ "Very Happy",
+      HAPPY == 2 ~ "Pretty Happy",
+      HAPPY == 3 ~ "Not Too Happy",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  drop_na(Happiness_Level)
+
+ggplot(
+  happiness_plot_data,
+  aes(
+    x = factor(YEAR),
+    y = HAPPY
+  )
+) +
+  geom_jitter(
+    width = 0.2,
+    alpha = 0.25,
+    size = 1.4,
+    color = "#1f77b4"
+  ) +
+  scale_y_reverse(
+    breaks = c(1, 2, 3),
+    labels = c("Very Happy", "Pretty Happy", "Not Too Happy")
+  ) +
+  labs(
+    title = "Happiness Responses Across Survey Years",
+    subtitle = "General Social Survey respondents, 2018–2024",
+    x = "Survey Year",
+    y = "Happiness Level"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 11)
+  )
+```
+
+The happiness scatterplot shows the spread of respondent happiness levels across the selected years. The jittered points help reduce overlap because happiness is measured using a small number of response categories.
+
+## Figure 4: Average Confidence and Happiness Trends
+
+```{r}
+#| fig-cap: "Line chart showing average responses for selected GSS variables from 2018 to 2024."
+#| fig-alt: "Line chart comparing average response scores for happiness, prayer, confidence in clergy, confidence in the federal government, and confidence in medicine across 2018, 2021, 2022, and 2024."
+#| fig-width: 8
+#| fig-height: 5
+#| message: false
+#| warning: false
+
+trend_data <- clean_data |>
+  group_by(YEAR) |>
+  summarise(
+    Prayer = mean(PRAY, na.rm = TRUE) / 2,
+    Happiness = mean(HAPPY, na.rm = TRUE),
+    `Clergy Confidence` = mean(CONCLERG, na.rm = TRUE),
+    `Govt Confidence` = mean(CONFED, na.rm = TRUE),
+    `Health Confidence` = mean(CONMEDIC, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  pivot_longer(
+    cols = -YEAR,
+    names_to = "Variable",
+    values_to = "Mean"
+  )
+
+ggplot(
+  trend_data,
+  aes(
+    x = YEAR,
+    y = Mean,
+    group = Variable,
+    color = Variable
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_x_continuous(
+    breaks = c(2018, 2021, 2022, 2024)
+  ) +
+  labs(
+    title = "Average Social Attitude Responses Over Time",
+    subtitle = "Lower values generally represent more positive responses",
+    x = "Survey Year",
+    y = "Mean Response",
+    color = "Variable"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 11),
+    legend.position = "bottom"
+  )
+```
+
+This line chart provides another view of how the selected variables changed over time. It helps compare medical confidence with happiness, prayer frequency, confidence in clergy, and confidence in the federal government.
+
+# Interpretation of Results
+
+The visualizations suggest that public confidence in medicine changed across the selected survey years. The stacked bar chart gives a clearer view of the percentage of respondents in each medical confidence category, while the summary table and line chart show how medical confidence compares with other social attitudes. The happiness scatterplot adds context by showing how self-reported happiness varied during the same time period.
+
+Overall, the analysis shows that confidence in institutions can be studied alongside measures of personal well-being and social behavior. These patterns are important because public trust in medicine and government can shape how people respond to major public health events and social changes.
+
+# Conclusion
+
+This analysis used General Social Survey data to examine public confidence in medicine and related social variables from 2018 to 2024. Through data cleaning, exploratory analysis, professional tables, and multiple visualizations, the report highlights how public sentiment toward medical institutions and other social measures can be studied using R and Quarto.
+
+# Author Contributions
+
+Abhiraj Srivastava was responsible for data cleaning, exploratory analysis, Quarto document organization, table creation, and visualization development.
+
+# Code Appendix
+
+```{r}
+sessionInfo()
+```
