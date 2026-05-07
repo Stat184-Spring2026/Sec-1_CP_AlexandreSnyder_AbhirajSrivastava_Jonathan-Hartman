@@ -1,0 +1,189 @@
+---
+title: "STAT184 Final Project"
+author: "Abhiraj Srivastava"
+format: pdf
+editor: visual
+number-sections: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+# Introduction
+
+This project explores public confidence in medicine using data from the General Social Survey (GSS). The analysis focuses on how trust in medical institutions changed across selected survey years from 2018 to 2024, especially in the period surrounding the COVID-19 pandemic.
+
+Public confidence in medicine is important because it can affect how people respond to health guidance, scientific information, and public health institutions. By using tables and visualizations, this report helps show how patterns in public trust changed over time.
+
+# Data Provenance
+
+The data used in this project come from the General Social Survey (GSS), a long-running survey that collects information about social attitudes, behaviors, and demographic characteristics in the United States. The dataset used for this report was saved as `GSS_clean.rds` and analyzed using R.
+
+The main variable used in this analysis is `CONMEDIC`, which measures respondents' confidence in medicine. The selected years for analysis are 2018, 2021, 2022, and 2024.
+
+# FAIR and CARE Principles
+
+## FAIR Principles
+
+The GSS data partially satisfy the FAIR principles. The dataset is findable because the GSS is a well-known public survey with documentation. It is accessible because students and researchers can obtain the data for analysis. It is interoperable because it can be used in statistical software such as R. It is reusable because the variables are documented and can support future research.
+
+## CARE Principles
+
+The GSS data only partially satisfy the CARE principles. While the dataset provides broad information about the United States population, it is not specifically designed around Indigenous data governance, community ownership, or collective benefit. Because of this, the results should be interpreted as broad social survey findings rather than community-governed data.
+
+# Variables and Attributes
+
+This report focuses on the `CONMEDIC` variable from the GSS. The original response scale is:
+
+-   `1`: A great deal of confidence
+-   `2`: Only some confidence
+-   `3`: Hardly any confidence
+
+For clearer interpretation, the responses were recoded into three categories:
+
+-   High Trust / Full Confidence
+-   Moderate / Skeptical
+-   Low / No Confidence
+
+# Data Cleaning and Wrangling
+
+The original GSS data use negative values to represent missing, skipped, or invalid responses. These values were converted into `NA` before analysis. The data were also filtered to only include the years 2018, 2021, 2022, and 2024.
+
+```{r setup}
+# Primary Author: Abhiraj Srivastava
+# Reviewer: _______
+# Style Guide: Tidyverse Style Guide
+
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+
+GSS_clean <- readRDS("GSS_clean.rds")
+
+medical_data <- GSS_clean |>
+  filter(YEAR %in% c(2018, 2021, 2022, 2024)) |>
+  mutate(
+    CONMEDIC = if_else(CONMEDIC < 0, NA_integer_, CONMEDIC),
+    Medical_Confidence = case_when(
+      CONMEDIC == 1 ~ "High Trust / Full Confidence",
+      CONMEDIC == 2 ~ "Moderate / Skeptical",
+      CONMEDIC == 3 ~ "Low / No Confidence",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  drop_na(Medical_Confidence)
+```
+
+# Exploratory Data Analysis
+
+The exploratory analysis summarizes the number and percentage of respondents in each medical confidence category by year. This makes it possible to compare how public confidence in medicine changed over time.
+
+## Medical Confidence Table
+
+```{r medical-table}
+#| tbl-cap: "Medical confidence levels by year from the General Social Survey."
+#| tbl-alt: "Table showing medical confidence levels by year from 2018 to 2024. Moderate or skeptical confidence was the largest category in every year, while high trust declined and low confidence increased by 2024."
+
+medical_table <- medical_data |>
+  count(YEAR, Medical_Confidence) |>
+  group_by(YEAR) |>
+  mutate(
+    Percent = round(n / sum(n) * 100, 1)
+  ) |>
+  ungroup()
+
+knitr::kable(
+  medical_table,
+  caption = "Medical Confidence by Year",
+  align = "c"
+)
+```
+
+The table shows that moderate or skeptical confidence was the largest category across the selected years. It also shows that low confidence became more common by 2024.
+
+# Data Visualization
+
+## Stacked Bar Chart of Medical Confidence
+
+```{r medical-stacked-bar}
+#| fig-cap: "Stacked bar chart showing changes in public confidence toward medicine from 2018 to 2024."
+#| fig-alt: "A stacked bar chart comparing high, moderate, and low confidence in medicine across 2018, 2021, 2022, and 2024. Moderate confidence is the largest category in each year, high trust is lower in 2024 than in 2021, and low confidence is higher in 2024 than in earlier years."
+#| fig-width: 9
+#| fig-height: 5
+
+medical_graph_data <- medical_data |>
+  count(YEAR, Medical_Confidence) |>
+  group_by(YEAR) |>
+  mutate(percent = n / sum(n)) |>
+  ungroup() |>
+  mutate(
+    Medical_Confidence = factor(
+      Medical_Confidence,
+      levels = c(
+        "High Trust / Full Confidence",
+        "Moderate / Skeptical",
+        "Low / No Confidence"
+      )
+    )
+  )
+
+ggplot(
+  medical_graph_data,
+  aes(
+    x = factor(YEAR),
+    y = percent,
+    fill = Medical_Confidence
+  )
+) +
+  geom_col(width = 0.9, color = "white") +
+  scale_y_continuous(
+    labels = function(x) paste0(x * 100, "%"),
+    limits = c(0, 1)
+  ) +
+  scale_fill_manual(
+    values = c(
+      "High Trust / Full Confidence" = "#1f77b4",
+      "Moderate / Skeptical" = "#f2f2f2",
+      "Low / No Confidence" = "#e45756"
+    )
+  ) +
+  labs(
+    title = "The Shift in Public Sentiment Toward Medicine",
+    subtitle = "Percentage of population by trust level (2018–2024)",
+    x = NULL,
+    y = "Percentage of Respondents",
+    fill = "Sentiment"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18),
+    plot.subtitle = element_text(size = 12),
+    legend.position = "top",
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+```
+
+The stacked bar chart helps visualize the distribution of confidence levels for each year. The chart makes it easier to compare the relative share of high trust, moderate confidence, and low confidence over time.
+
+# Interpretation of Results
+
+The results suggest that public confidence in medicine changed between 2018 and 2024. Moderate or skeptical confidence remained the largest category across all selected years. High trust was strongest in 2021 but appeared lower by 2024, while low confidence increased by 2024.
+
+These changes may reflect broader social and political debates about public health, medical institutions, and scientific authority after the COVID-19 pandemic. However, the data alone cannot prove that the pandemic caused these changes; it only shows patterns in survey responses over time.
+
+# Conclusion
+
+This report used General Social Survey data to examine public confidence in medicine from 2018 to 2024. Through data cleaning, exploratory data analysis, a professional table, and a stacked bar chart, the report shows how R and Quarto can be used to communicate social survey trends clearly.
+
+# Author Contributions
+
+Abhiraj Srivastava was responsible for cleaning the data, organizing the Quarto report, creating the medical confidence table, creating the stacked bar chart, and writing the interpretation.
+
+# Code Appendix
+
+```{r code-appendix, echo=TRUE}
+# Session information for reproducibility
+sessionInfo()
+```
