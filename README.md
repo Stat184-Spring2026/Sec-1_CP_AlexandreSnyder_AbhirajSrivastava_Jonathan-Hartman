@@ -1,4 +1,4 @@
-# General Social SUrvey (GSS) Data Exploration
+# General Social Survey (GSS) Data Exploration
 
 This repository explores GSS Data from years 2018 through 2023, with the context of the COVID-19 pandemic in mind, focusing on a few key variables such as confidence in institutions and other social factors.
 
